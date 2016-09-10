@@ -1,7 +1,7 @@
 package jdiff;
 
 @:enum
-abstract OperationName(String) from String to String {
+private abstract OperationName(String) from String to String {
 
 	var Add = 'add';
 	var Remove = 'remove';
@@ -69,6 +69,7 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 }
 
 enum Operation {
+	
 	/**
 	 * The "add" operation performs one of the following functions,
 	 * depending upon what the target location references:
@@ -112,4 +113,5 @@ enum Operation {
 	 * is equal to a specified value.
 	 */
 	Test(path: JsonPointer, value: JsonValue);
+	
 }

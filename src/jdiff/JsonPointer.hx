@@ -9,15 +9,15 @@ enum SegmentResult {
 }
 
 enum TargetResult {
-	Value(value: Any);
-	ArrayValue(parent: Array<Any>, index: Int);
-	ObjectValue(object: DynamicAccess<Any>, key: String);
+	Value(value: JsonValue);
+	ArrayValue(parent: Array<JsonValue>, index: Int);
+	ObjectValue(object: DynamicAccess<JsonValue>, key: String);
 	NotFound;
 }
 
 abstract PointerTarget(TargetResult) from TargetResult to TargetResult {
 	
-	public inline function get(): Outcome<Any, Noise>
+	public inline function get(): Outcome<JsonValue, Noise>
 		return switch this {
 			case Value(value): 
 				Success(value);
@@ -50,7 +50,7 @@ abstract JsonPointer(String) from String to String {
 	static var parseEReg: Lazy<EReg> = ~/\/|~1|~0/g;
 	static var arrayIndexEReg: Lazy<EReg> = ~/^(0|[1-9]\d*)$/;
 	
-	public function find(input: Any): PointerTarget {
+	public function find(input: JsonValue): PointerTarget {
 		if (this == null)
 			throw 'Invalid JsonPointer: null';
 		
@@ -68,7 +68,7 @@ abstract JsonPointer(String) from String to String {
 				return Failed;
 			}
 
-			if (Std.is(input, Array)) // todo: context stuff				
+			if (input.isArray()) // todo: context stuff				
 				target = ArrayValue(input, parseArrayIndex(segment));
 			else
 				target = ObjectValue(input, segment);
@@ -113,5 +113,22 @@ abstract JsonPointer(String) from String to String {
 		accum += this.substr(pos);
 		onSegment(accum);
 	}
+	
+	@:op(A + B)
+	inline function addSegment(segment: String): JsonPointer
+		return this + '/' + encodeSegment(segment);
+		
+	@:op(A + B)
+	inline function addIndex(index: Int): JsonPointer
+		return this + '/' + Std.string(index);
+	
+	function encodeSegment(s: String)
+		return separatorEReg.get().replace(
+			escapeEReg.get().replace(
+				s, 
+				encodedEscape
+			), 
+			encodedSeparator
+		);
 	
 }
