@@ -1,0 +1,4 @@
+-lib promhx
+-lib buddy
+-cp tests
+-main RunTests
