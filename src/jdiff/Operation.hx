@@ -85,8 +85,8 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 				switch from.find(input).get() {
 					case Success(value):
 						return ([
-							(Remove(from): OperationRep<OperationData>),
-							(Add(path, value): OperationRep<OperationData>)
+							Remove(from),
+							Add(path, value)
 						]: JsonPatch).apply(input);
 					case Failure(_):
 						throw 'Path does not exist: '+path;
@@ -95,7 +95,7 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 				switch from.find(input).get() {
 					case Success(value):
 						return ([
-							(Add(path, value.clone()): OperationRep<OperationData>)
+							Add(path, value.clone())
 						]: JsonPatch).apply(input);
 					case Failure(_):
 						throw 'Path does not exist: '+path;
@@ -109,6 +109,22 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 					case Failure(_):
 						throw 'Path does not exist: '+path;
 				}
+		}
+		
+	public function inverse(?prev: OperationRep<ValueOperation>): JsonPatch
+		return switch (this: OperationRep<OperationData>).get() {
+			case Add(path, value):
+				[Test(path, value), Remove(path)];
+			case Remove(path):
+				[Add(prev.path, prev.value)];
+			case Replace(path, value):
+				[Test(prev.path, value), Replace(prev.path, prev.value)];
+			case Move(from, path):
+				[Move(from, path)];
+			case Copy(from, path):
+				throw 'Cannot invert copy operation';
+			case Test(path, value):
+				[Test(path, value)];
 		}
 		
 	@:from inline static function fromFrom(data: FromOperation)

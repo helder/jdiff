@@ -97,7 +97,7 @@ class JDiff {
 					if(state.invertible)
 						patch.push(Test(p, a1[j]));
 
-					if(last.op == Add && last.path == p)
+					if(last != null && last.op == Add && last.path == p)
 						last.op = Replace;
 					else
 						patch.push(Remove(p));

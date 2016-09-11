@@ -4,11 +4,12 @@ import haxe.DynamicAccess;
 
 using tink.CoreApi;
 
-enum Primitive {
-	PNumber;
-	PString;
-	PBoolean;
-	PNull;
+@:enum
+abstract Primitive(Int) {
+	var PNumber = 1;
+	var PString = 2;
+	var PBoolean = 3;
+	var PNull = 4;
 }
 
 abstract JsonValue(Dynamic) from Dynamic {
