@@ -112,10 +112,10 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 		}
 		
 	@:from inline static function fromFrom(data: FromOperation)
-		return new OperationRep(data);
+		return new OperationRep<FromOperation>(data);
 		
 	@:from inline static function fromValue(data: ValueOperation)
-		return new OperationRep(data);
+		return new OperationRep<ValueOperation>(data);
 		
 	@:from inline static function fromOperation(operation: Operation): OperationRep<OperationData>
 		return switch operation {

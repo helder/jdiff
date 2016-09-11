@@ -45,8 +45,6 @@ abstract JsonPointer(String) from String to String {
 	inline static var escapeChar = '~';
 	inline static var encodedEscapeChar = '~0';
 	
-	static var arrayIndexEReg: Lazy<EReg> = ~/^(0|[1-9]\d*)$/;
-	
 	public function find(input: JsonValue): PointerTarget {
 		if (this == null)
 			throw 'Invalid JsonPointer: null';
@@ -81,7 +79,7 @@ abstract JsonPointer(String) from String to String {
 	}
 	
 	function parseArrayIndex (s: String): Int
-		if(arrayIndexEReg.get().match(s))
+		if(~/^(0|[1-9]\d*)$/.match(s))
 			return Std.parseInt(s);
 		else
 			throw 'Invalid array index: ' + s;

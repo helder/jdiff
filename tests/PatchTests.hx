@@ -10,7 +10,7 @@ import haxe.macro.Context;
 #end
 
 typedef Test = {
-	comment: String,
+	?comment: String,
 	doc: JsonValue,
 	patch: JsonPatch,
     ?expected: JsonValue,

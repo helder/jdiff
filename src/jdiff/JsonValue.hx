@@ -4,6 +4,13 @@ import haxe.DynamicAccess;
 
 using tink.CoreApi;
 
+enum Primitive {
+	PNumber;
+	PString;
+	PBoolean;
+	PNull;
+}
+
 abstract JsonValue(Dynamic) from Dynamic {
 	
 	public inline function isArray()
@@ -18,6 +25,15 @@ abstract JsonValue(Dynamic) from Dynamic {
 			!Std.is(this, Bool) &&
 			Reflect.isObject(this);
 		
+	public inline function primitiveType() {
+		return 
+			if (this == null) PNull
+			else if (Std.is(this, String)) PString
+			else if (Std.is(this, Bool)) PBoolean
+			else if (Std.is(this, Int) || Std.is(this, Float)) PNumber
+			else null;
+	}
+			
 	public function clone(): JsonValue {
 		var current: JsonValue = this;
 		if (current.isArray())
@@ -45,9 +61,7 @@ abstract JsonValue(Dynamic) from Dynamic {
 			return equalArrays(current, value);
 		if (current.isObject() && value.isObject())
 			return equalObjects(current, value);
-		return 
-			#if js untyped __js__('current === value')
-			#else current == value #end;
+		return current == value && current.primitiveType() == value.primitiveType();
 	}
 	
 	function equalArrays(a: Array<JsonValue>, b: Array<JsonValue>) {
