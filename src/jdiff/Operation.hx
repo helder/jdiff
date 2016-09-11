@@ -2,6 +2,7 @@ package jdiff;
 
 import haxe.DynamicAccess;
 import tink.core.Any;
+import jdiff.JsonPointer;
 
 @:enum
 private abstract OperationName(String) from String to String {
@@ -84,8 +85,8 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 				switch from.find(input).get() {
 					case Success(value):
 						return ([
-							Remove(from),
-							Add(path, value)
+							(Remove(from): OperationRep<OperationData>),
+							(Add(path, value): OperationRep<OperationData>)
 						]: JsonPatch).apply(input);
 					case Failure(_):
 						throw 'Path does not exist: '+path;
@@ -94,7 +95,7 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 				switch from.find(input).get() {
 					case Success(value):
 						return ([
-							Add(path, value.clone())
+							(Add(path, value.clone()): OperationRep<OperationData>)
 						]: JsonPatch).apply(input);
 					case Failure(_):
 						throw 'Path does not exist: '+path;
