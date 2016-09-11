@@ -1,10 +1,13 @@
 import haxe.Json;
 import haxe.Resource;
-import haxe.macro.Context;
 import jdiff.JsonValue;
+import jdiff.JsonPatch;
+
+#if macro
 import sys.FileSystem;
 import sys.io.File;
-import jdiff.JsonPatch;
+import haxe.macro.Context;
+#end
 
 typedef Test = {
 	comment: String,
