@@ -1,15 +1,16 @@
 package jdiff;
 
+import haxe.DynamicAccess;
+import tink.core.Any;
+
 @:enum
 private abstract OperationName(String) from String to String {
-
 	var Add = 'add';
 	var Remove = 'remove';
 	var Replace = 'replace';
 	var Move = 'move';
 	var Copy = 'copy';
 	var Test = 'test';
-	
 }
 
 typedef OperationData = {
@@ -30,8 +31,84 @@ typedef ValueOperation = {
 @:forward
 abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 	
-	inline function new (data: T)
+	inline function new(data: T)
 		this = data;
+		
+	public function apply(input: JsonValue): JsonValue
+		switch (this: OperationRep<OperationData>).get() {
+			case Add(path, value):
+				switch path.find(input) {
+					case Document(_):
+						return value.clone();
+					case ArrayValue(parent, index):
+						if (index > parent.length)
+							throw 'Target of add outside of array bounds';
+						parent.insert(index, value.clone());
+					case ArrayAppendValue(parent):
+						parent.push(value.clone());
+					case ObjectValue(object, key):
+						object[key] = value.clone();
+					case NotFound:
+						throw 'Path does not exist: '+path;
+				}
+				return input;
+			case Remove(path):
+				switch path.find(input) {
+					case Document(_):
+						return null;
+					case ArrayValue(parent, index):
+						parent.splice(index, 1);
+					case ArrayAppendValue(parent):
+						throw 'Invalid array index: -';
+					case ObjectValue(object, key):
+						object.remove(key);
+					case NotFound:
+						throw 'Path does not exist: '+path;
+				}
+				return input;
+			case Replace(path, value):
+				switch path.find(input) {
+					case Document(_):
+						return value.clone();
+					case ArrayValue(parent, index):
+						parent[index] = value.clone();
+					case ArrayAppendValue(parent):
+						throw 'Invalid array index: -';
+					case ObjectValue(object, key):
+						object[key] = value.clone();
+					case NotFound:
+						throw 'Path does not exist: '+path;
+				}
+				return input;
+			case Move(from, path):
+				switch from.find(input).get() {
+					case Success(value):
+						return ([
+							Remove(from),
+							Add(path, value)
+						]: JsonPatch).apply(input);
+					case Failure(_):
+						throw 'Path does not exist: '+path;
+				}
+			case Copy(from, path):
+				switch from.find(input).get() {
+					case Success(value):
+						return ([
+							Add(path, value.clone())
+						]: JsonPatch).apply(input);
+					case Failure(_):
+						throw 'Path does not exist: '+path;
+				}
+			case Test(path, value):
+				switch path.find(input).get() {
+					case Success(original):
+						if (!original.equals(value))
+							throw 'Test failed: '+this;
+						return input;
+					case Failure(_):
+						throw 'Path does not exist: '+path;
+				}
+		}
 		
 	@:from inline static function fromFrom(data: FromOperation)
 		return new OperationRep(data);
@@ -57,15 +134,23 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 		
 	@:to public inline function get(): Operation
 		return switch this.op {
-			case Add: Add(this.path, (cast this).value);
+			case Add: Add(this.path, expectProperty('value'));
 			case Remove: Remove(this.path);
-			case Replace: Replace(this.path, (cast this).value);
-			case Move: Move((cast this).from, this.path);
-			case Copy: Copy((cast this).from, this.path);
-			case Test: Test(this.path, (cast this).value);
+			case Replace: Replace(this.path, expectProperty('value'));
+			case Move: Move(expectProperty('from'), this.path);
+			case Copy: Copy(expectProperty('from'), this.path);
+			case Test: Test(this.path, expectProperty('value'));
 			default:
 				throw 'Unsupported operation: '+this.op;
 		}
+		
+	function expectProperty(name: String): Any {
+		var obj: DynamicAccess<Any> = cast this;
+		if (!obj.exists(name))
+			throw 'Missing property: '+name;
+		else
+			return obj[name];
+	}
 }
 
 enum Operation {

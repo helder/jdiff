@@ -1,4 +1,4 @@
--lib promhx
+--macro PatchTests.init()
 -lib buddy
 -cp tests
 -main RunTests

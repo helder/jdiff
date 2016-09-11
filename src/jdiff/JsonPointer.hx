@@ -2,6 +2,7 @@ package jdiff;
 
 import haxe.DynamicAccess;
 using tink.CoreApi;
+using StringTools;
 
 enum SegmentResult {
 	Failed;
@@ -9,8 +10,9 @@ enum SegmentResult {
 }
 
 enum TargetResult {
-	Value(value: JsonValue);
+	Document(value: JsonValue);
 	ArrayValue(parent: Array<JsonValue>, index: Int);
+	ArrayAppendValue(parent: Array<JsonValue>);
 	ObjectValue(object: DynamicAccess<JsonValue>, key: String);
 	NotFound;
 }
@@ -19,13 +21,13 @@ abstract PointerTarget(TargetResult) from TargetResult to TargetResult {
 	
 	public inline function get(): Outcome<JsonValue, Noise>
 		return switch this {
-			case Value(value): 
+			case Document(value): 
 				Success(value);
 			case ArrayValue(parent, index):
 				Success(parent[index]);
 			case ObjectValue(object, key):
 				Success(object[key]);
-			case NotFound:
+			case NotFound | ArrayAppendValue(_):
 				Failure(Noise);
 		}
 		
@@ -37,17 +39,12 @@ abstract PointerTarget(TargetResult) from TargetResult to TargetResult {
  */
 abstract JsonPointer(String) from String to String {
 	
-	static var separator = '/';
-	static var separatorEReg: Lazy<EReg> = ~/\//g;
-	static var encodedSeparator = '~1';
-	static var encodedSeparatorEReg: Lazy<EReg> = ~/~1/g;
+	inline static var separator = '/';
+	inline static var encodedSeparator = '~1';
 
-	static var escapeChar = '~';
-	static var escapeEReg: Lazy<EReg> = ~/~/g;
-	static var encodedEscape = '~0';
-	static var encodedEscapeEReg: Lazy<EReg> = ~/~0/g;
+	inline static var escapeChar = '~';
+	inline static var encodedEscapeChar = '~0';
 	
-	static var parseEReg: Lazy<EReg> = ~/\/|~1|~0/g;
 	static var arrayIndexEReg: Lazy<EReg> = ~/^(0|[1-9]\d*)$/;
 	
 	public function find(input: JsonValue): PointerTarget {
@@ -55,28 +52,30 @@ abstract JsonPointer(String) from String to String {
 			throw 'Invalid JsonPointer: null';
 		
 		if (this == '')
-			return Value(input);
+			return Document(input);
 		
 		if (this == separator)
 			return ObjectValue(input, '');
 		
-		var target: PointerTarget;
+		var target: PointerTarget = NotFound;
 		
-		parse(function(segment) {
-			if (input == null) {
-				target = NotFound;
-				return Failed;
-			}
+		for (segment in this.substr(1).split('/').map(decodeSegment)) {
+			if (input == null)
+				return NotFound;
 
-			if (input.isArray()) // todo: context stuff				
-				target = ArrayValue(input, parseArrayIndex(segment));
+			if (input.isArray()) // todo: context stuff			
+				if (segment == '-')
+					target = ArrayAppendValue(input);
+				else
+					target = ArrayValue(input, parseArrayIndex(segment));
 			else
 				target = ObjectValue(input, segment);
 			
-			input = target.get();
-			
-			return Continue;
-		});
+			input = switch target.get() {
+				case Success(found): found;
+				default: null;
+			}
+		}
 		
 		return target;
 	}
@@ -87,48 +86,18 @@ abstract JsonPointer(String) from String to String {
 		else
 			throw 'Invalid array index: ' + s;
 	
-	function parse(onSegment: String -> SegmentResult) {
-		var pos, accum, match, matcher: EReg = parseEReg.get();
-
-		pos = this.charAt(0) == separator ? 1 : 0;
-		accum = '';
-
-		while(matcher.match(this.substr(pos))) {
-
-			match = matcher.matched(0);
-			var matchedPos = matcher.matchedPos().pos;
-			accum += this.substring(pos, matchedPos);
-			pos = matchedPos + match.length;
-
-			if(match == separator)
-				switch onSegment(accum) {
-					case Failed: return;
-					default: accum = '';
-				}
-			else
-				accum += match == encodedSeparator ? separator : escapeChar;
-			
-		}
-
-		accum += this.substr(pos);
-		onSegment(accum);
-	}
-	
 	@:op(A + B)
-	inline function addSegment(segment: String): JsonPointer
+	inline public function addSegment(segment: String): JsonPointer
 		return this + '/' + encodeSegment(segment);
 		
 	@:op(A + B)
-	inline function addIndex(index: Int): JsonPointer
+	inline public function addIndex(index: Int): JsonPointer
 		return this + '/' + Std.string(index);
 	
 	function encodeSegment(s: String)
-		return separatorEReg.get().replace(
-			escapeEReg.get().replace(
-				s, 
-				encodedEscape
-			), 
-			encodedSeparator
-		);
+		return s.replace(separator, encodedSeparator).replace(escapeChar, encodedEscapeChar);
+		
+	function decodeSegment(s: String)
+		return s.replace(encodedSeparator, separator).replace(encodedEscapeChar, escapeChar);
 	
 }

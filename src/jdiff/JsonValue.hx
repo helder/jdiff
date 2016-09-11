@@ -2,7 +2,9 @@ package jdiff;
 
 import haxe.DynamicAccess;
 
-abstract JsonValue(Dynamic) from Dynamic to Dynamic {
+using tink.CoreApi;
+
+abstract JsonValue(Dynamic) from Dynamic {
 	
 	public inline function isArray()
 		return Std.is(this, Array);
@@ -15,8 +17,64 @@ abstract JsonValue(Dynamic) from Dynamic to Dynamic {
 			!Std.is(this, Float) &&
 			!Std.is(this, Bool) &&
 			Reflect.isObject(this);
+		
+	public function clone(): JsonValue {
+		var current: JsonValue = this;
+		if (current.isArray())
+			return cloneArray(current);
+		if(current == null || !current.isObject())
+			return current;
+		return cloneObject(current);
+	}
+
+	function cloneArray(array: Array<JsonValue>): JsonValue
+		return [for (i in array) i.clone()];
+
+	function cloneObject(obj: DynamicAccess<JsonValue>): JsonValue {
+		var response: DynamicAccess<JsonValue> = new DynamicAccess();
+
+		for (key in obj.keys())
+			response[key] = obj[key].clone();
+
+		return response;
+	}
 	
-	@:to public inline function toDynamicAccess(): DynamicAccess<JsonValue>
-		return cast this;
+	public function equals(value: JsonValue): Bool {
+		var current: JsonValue = this;
+		if (current.isArray() && value.isArray())
+			return equalArrays(current, value);
+		if (current.isObject() && value.isObject())
+			return equalObjects(current, value);
+		return 
+			#if js untyped __js__('current === value')
+			#else current == value #end;
+	}
+	
+	function equalArrays(a: Array<JsonValue>, b: Array<JsonValue>) {
+		if (a.length != b.length) 
+			return false;
+		for (i in 0 ... a.length)
+			if (!a[i].equals(b[i])) 
+				return false;
+		return true;
+	}
+	
+	function equalObjects(a: DynamicAccess<JsonValue>, b: DynamicAccess<JsonValue>) {
+		var keysA = a.keys(), keysB = b.keys();
+		if (keysA.length != keysB.length)
+			return false;
+		for (key in keysA)
+			if (!a[key].equals(b[key])) 
+				return false;
+		return true;
+	}
+	
+	@:to 
+	inline function promote<T>(): T 
+		return this;
+		
+	@:from 
+	inline static function fromDynamicAccess(obj: DynamicAccess<JsonValue>): JsonValue
+		return cast obj;
 		
 }

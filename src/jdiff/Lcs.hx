@@ -39,7 +39,6 @@ class Lcs {
 			}
 			--j;
 		}
-		trace(matrix);
 	}
 	
 	function findPrefix(a: Array<String>, b: Array<String>) {
@@ -95,7 +94,7 @@ class Lcs {
 		for(i in 0 ... prefix)
 			r = reducer(r, Equal, i, i);
 
-		k = prefix;
+		k = prefix > 0 ? prefix - 1 : 0;
 		i = 0;
 		j = 0;
 		while(i < m.length) {
