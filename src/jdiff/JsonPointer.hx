@@ -92,10 +92,10 @@ abstract JsonPointer(String) from String to String {
 	inline public function addIndex(index: Int): JsonPointer
 		return this + '/' + Std.string(index);
 	
-	function encodeSegment(s: String)
+	public static function encodeSegment(s: String)
 		return s.replace(separator, encodedSeparator).replace(escapeChar, encodedEscapeChar);
 		
-	function decodeSegment(s: String)
+	public static function decodeSegment(s: String)
 		return s.replace(encodedSeparator, separator).replace(encodedEscapeChar, escapeChar);
 	
 }
