@@ -1,5 +1,6 @@
 {
   "name": "jdiff",
+  "description": "JSON patch and diff (RFC6902)",
   "license": "MIT",
   "tags": [
     "cross",
@@ -10,9 +11,9 @@
     "benmerckx"
   ],
   "releasenote": "Initial release",
-  "version": "0.0.0-alpha.0",
+  "version": "0.0.0-alpha.1",
   "url": "https://github.com/benmerckx/jdiff/",
   "dependencies": {
-	"tink_core": ""
+	  "tink_core": ""
   }
 }
