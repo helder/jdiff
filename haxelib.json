@@ -9,8 +9,8 @@
   "contributors": [
     "benmerckx"
   ],
-  "releasenote": "initial release",
-  "version": "0.0.0",
+  "releasenote": "Initial release",
+  "version": "0.0.0-alpha.0",
   "url": "https://github.com/benmerckx/jdiff/",
   "dependencies": {
 	"tink_core": ""
