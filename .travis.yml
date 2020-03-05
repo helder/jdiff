@@ -1,33 +1,21 @@
 sudo: required
 dist: trusty
-
-language: haxe
-
-os:
-  - linux
-  - osx
-  
-haxe:
-  - "3.2.1"
-  - development
-  
-matrix:
-  allow_failures:
-    - haxe: development
+language: node_js
+node_js:
+  - 12
     
 install:
-  - haxelib install travix
-  - haxelib run travix install
+  - yarn
 
 script:
-  - haxelib run travix interp
-  - haxelib run travix neko
+  - yarn lix travix interp
+  - yarn lix travix neko
   # python fails at getting the 'from' field, some reflect bug with reserved keywords
-  #- haxelib run travix python
-  - haxelib run travix node
-  - haxelib run travix js
-  - haxelib run travix flash
-  - haxelib run travix java
-  - haxelib run travix cpp
-  - haxelib run travix cs
-  - haxelib run travix php
+  #- yarn lix travix python
+  - yarn lix travix node
+  - yarn lix travix js
+  - yarn lix travix flash
+  - yarn lix travix java
+  - yarn lix travix cpp
+  - yarn lix travix cs
+  - yarn lix travix php
