@@ -1,2 +1,3 @@
 /bin
 *.hxproj
+/node_modules

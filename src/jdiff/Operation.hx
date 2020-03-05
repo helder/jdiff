@@ -30,7 +30,7 @@ typedef ValueOperation = {
 }
 
 @:forward
-abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
+abstract OperationRep<T: OperationData>(T) from T to T {
 	
 	inline function new(data: T)
 		this = data;
@@ -136,17 +136,17 @@ abstract OperationRep<T: OperationData>(T) from OperationData to OperationData {
 	@:from inline static function fromOperation(operation: Operation): OperationRep<OperationData>
 		return switch operation {
 			case Add(path, value):
-				{op: OperationName.Add, path: path, value: value};
+				new OperationRep({op: OperationName.Add, path: path, value: value});
 			case Remove(path):
-				{op: OperationName.Remove, path: path};
+				new OperationRep({op: OperationName.Remove, path: path});
 			case Replace(path, value):
-				{op: OperationName.Replace, path: path, value: value};
+				new OperationRep({op: OperationName.Replace, path: path, value: value});
 			case Move(from, path):
-				{op: OperationName.Move, from: from, path: path};
+				new OperationRep({op: OperationName.Move, from: from, path: path});
 			case Copy(from, path):
-				{op: OperationName.Copy, from: from, path: path};
+				new OperationRep({op: OperationName.Copy, from: from, path: path});
 			case Test(path, value):
-				{op: OperationName.Test, path: path, value: value};
+				new OperationRep({op: OperationName.Test, path: path, value: value});
 		}
 		
 	@:to public inline function get(): Operation
