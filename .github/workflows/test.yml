@@ -1,0 +1,35 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        haxe-version:
+          - stable
+          - nightly
+        target: 
+          - interp
+          - node
+          - neko
+          - python
+          - php
+          - cpp
+          - js
+          - java -D jvm
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: lix-pm/setup-lix@master
+    - run: lix install haxe ${{ matrix.haxe-version }}
+    - run: lix download
+    - run: lix run travix ${{ matrix.target }}

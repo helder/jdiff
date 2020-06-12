@@ -1,5 +1,5 @@
-# @install: lix --silent download "haxelib:/buddy#2.10.4" into buddy/2.10.4/haxelib
+# @install: lix --silent download "haxelib:/buddy#2.10.5" into buddy/2.10.5/haxelib
 -lib asynctools
 -lib promhx
--cp ${HAXE_LIBCACHE}/buddy/2.10.4/haxelib/
--D buddy=2.10.4
+-cp ${HAXE_LIBCACHE}/buddy/2.10.5/haxelib/
+-D buddy=2.10.5
