@@ -1,7 +1,7 @@
 import haxe.Json;
 import haxe.Resource;
-import jdiff.JsonValue;
-import jdiff.JsonPatch;
+import helder.jdiff.JsonValue;
+import helder.jdiff.JsonPatch;
 
 #if macro
 import sys.FileSystem;

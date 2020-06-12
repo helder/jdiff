@@ -1,6 +1,6 @@
 import buddy.BuddySuite;
 import haxe.Json;
-import jdiff.JDiff;
+import helder.JDiff;
 
 using buddy.Should;
 

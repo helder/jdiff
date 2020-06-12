@@ -1,4 +1,6 @@
 --macro PatchTests.init()
 -lib buddy
+-lib tink_core
 -cp tests
+-cp src
 -main RunTests

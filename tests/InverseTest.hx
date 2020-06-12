@@ -1,6 +1,6 @@
 import buddy.BuddySuite;
-import jdiff.JDiff;
-import jdiff.JsonPatch;
+import helder.JDiff;
+import helder.jdiff.JsonPatch;
 
 using buddy.Should;
 

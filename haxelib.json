@@ -1,5 +1,5 @@
 {
-  "name": "jdiff",
+  "name": "helder.jdiff",
   "description": "JSON patch and diff (RFC6902)",
   "license": "MIT",
   "tags": [
@@ -10,9 +10,9 @@
   "contributors": [
     "benmerckx"
   ],
-  "releasenote": "Haxe 4",
-  "version": "0.1.0",
-  "url": "https://github.com/benmerckx/jdiff/",
+  "releasenote": "Top level",
+  "version": "0.2.0",
+  "url": "https://github.com/helder/jdiff",
   "dependencies": {
 	  "tink_core": ""
   }
